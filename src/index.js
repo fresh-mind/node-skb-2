@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import canonize from './canonize';
 
 const app = express();
 app.use(cors());
@@ -91,6 +92,19 @@ app.get('/task2B', (req, res) => {
 	});*/
 
 	res.send( res_str );
+
+});
+
+app.get('/task2C', (req, res) => {
+
+	console.log( req.query.username );
+  
+	const username = canonize( req.query.username );
+	/*res.json({
+		url: req.query.url,
+		username,
+	});*/
+	res.send( username );
 
 });
 
