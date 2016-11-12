@@ -2,6 +2,8 @@ import express from 'express';
 import cors from 'cors';
 import canonize from './canonize';
 
+var fetch = require('node-fetch');
+
 const app = express();
 app.use(cors());
 
@@ -95,6 +97,7 @@ app.get('/task2B', (req, res) => {
 
 });
 
+
 app.get('/task2C', (req, res) => {
 
 	console.log( req.query.username );
@@ -108,10 +111,119 @@ app.get('/task2C', (req, res) => {
 
 });
 
+// ___________________________________ 3A ______________________________________
+
+const pcUrl = 'https://gist.githubusercontent.com/isuvorov/ce6b8d87983611482aac89f6d7bc0037/raw/pc.json';
+
+let pc = null;
+
+fetch(pcUrl)
+  .then(async (result) => {
+    pc = await result.json();
+    console.log('get json');
+  })
+  .catch(err => {
+    console.log('Чтото пошло не так:', err);
+  });
+
+app.get('/task3A', (req, res) => {
+
+	if( pc !== null ){
+		res.status(200).json(pc);
+	}else{
+		send404(res);
+	}
+		
+
+});
+
+
+app.get('/task3A/volumes', (req, res) => {
+
+	const hdd = pc['hdd'];
+
+	if( hdd !== undefined ){
+
+		const volumes = {};
+
+		hdd.forEach( (hdd_item) => {
+
+			//console.log(hdd_item);
+
+			volumes[ hdd_item.volume ] = volumes[ hdd_item.volume ] !== undefined ? 
+																		(volumes[ hdd_item.volume ]  + hdd_item.size) :
+																		hdd_item.size;
+
+
+		});
+
+		Object.keys(volumes).forEach( (key) => {
+	      volumes[key] += 'B';
+	    })
+
+		console.log(volumes);
+
+		res.status(200).json( volumes );
+
+	}else{
+		send404(res);
+	}
+	
+});
+
+app.get('/task3A/:level1', (req, res) => {
+
+	const level_obj = pc[req.params.level1];
+
+	if( level_obj !== undefined ){
+		res.status(200).json(level_obj);	
+	}else{
+		send404(res);
+	}
+	
+});
+
+app.get('/task3A/:level1/:level2', (req, res) => {
+
+	const level_1 = pc[req.params.level1];
+	const level_2 = level_1 !== undefined ? level_1[req.params.level2] : undefined;
+
+	if( level_2 !== undefined ){
+		res.status(200).json(level_2);	
+	}
+	else{
+		send404(res);
+	}
+	
+});
+
+app.get('/task3A/:level1/:level2/:level3', (req, res) => {
+
+	const level_1 = pc[req.params.level1];
+	const level_2 = level_1 !== undefined ? level_1[req.params.level2] : undefined;
+	const level_3 = level_2 !== undefined ? level_2[req.params.level3] : undefined;
+
+	if( level_3 !== undefined ){
+		res.status(200).json(level_3);	
+	}
+	else{
+		send404(res);
+	}
+	
+});
+
+
+
 app.listen(3000, () => {
   console.log('Your app listening on port 3000!');
 });
 
 function capitalizeFirstLetter(string) {
     return string.charAt(0).toUpperCase() + string.slice(1);
+}
+
+function send404(res){
+
+	res.status(404).send('Not found');
+
 }
