@@ -171,12 +171,12 @@ app.get('/task3A/volumes', (req, res) => {
 	
 });
 
-app.get('/task3A/:level1', (req, res) => {
+/*app.get('/task3A/:level1', (req, res) => {
 
-	const level_obj = pc[req.params.level1];
+	const param = req.params.level1;
 
-	if( level_obj !== undefined ){
-		res.status(200).json(level_obj);	
+	if( pc.hasOwnProperty(param) ){
+		res.status(200).json(pc[param]);	
 	}else{
 		send404(res);
 	}
@@ -185,32 +185,96 @@ app.get('/task3A/:level1', (req, res) => {
 
 app.get('/task3A/:level1/:level2', (req, res) => {
 
-	const level_1 = pc[req.params.level1];
-	const level_2 = level_1 !== undefined ? level_1[req.params.level2] : undefined;
+	const param_1 = req.params.level1;
+	const param_2 = req.params.level2;
 
-	if( level_2 !== undefined ){
-		res.status(200).json(level_2);	
+	const level_1 = pc.hasOwnProperty(param_1) ? pc[param_1] : undefined;
+
+	if( level_1 !== undefined && level_1.hasOwnProperty(param_2) ){
+		res.status(200).json(level_1[param_2]);	
 	}
 	else{
 		send404(res);
 	}
 	
+});*/
+
+app.get('/task3A/:level1', (req, res) => {
+
+	const params = Object.values(req.params);
+
+	renderObjectByRoute( params, req, res );
+	
+});
+
+app.get('/task3A/:level1/:level2', (req, res) => {
+
+	const params = Object.values(req.params);
+
+	renderObjectByRoute( params, req, res );
+	
 });
 
 app.get('/task3A/:level1/:level2/:level3', (req, res) => {
 
-	const level_1 = pc[req.params.level1];
-	const level_2 = level_1 !== undefined ? level_1[req.params.level2] : undefined;
-	const level_3 = level_2 !== undefined ? level_2[req.params.level3] : undefined;
+	const params = Object.values(req.params);
 
-	if( level_3 !== undefined ){
+	renderObjectByRoute( params, req, res );
+	
+});
+
+function renderObjectByRoute(params, req, res){
+
+	const all_params = params;
+	const depth = all_params.length;
+
+	console.log(all_params);
+
+	var obj = pc;
+
+	var counter = 0;
+
+	all_params.forEach( (param) => {
+
+		//console.log(param);
+		//console.log(obj);
+	     
+		if( typeof obj === 'object' && obj.hasOwnProperty(param) ){
+
+			if( Array.isArray(obj) && isNaN(param)  && obj.indexOf(param) == -1 ){
+				return false;
+			}	
+				
+			obj = obj[param];
+			counter++;
+			
+		}
+
+	});
+
+	if( counter == depth ){
+		res.status(200).json(obj);	
+	}
+	else{
+		send404(res);
+	}
+
+}
+
+/*app.get('/task3A/:level1/:level2/:level3', (req, res) => {
+
+	const level_1 = pc[req.params.level1];
+	const level_2 = pc.hasOwnProperty(level_1) ? level_1[req.params.level2] : undefined;
+	const level_3 = pc.hasOwnProperty(level_2)  ? level_2[req.params.level3] : undefined;
+
+	if( pc.hasOwnProperty(level_3) ){
 		res.status(200).json(level_3);	
 	}
 	else{
 		send404(res);
 	}
 	
-});
+});*/
 
 
 
@@ -224,6 +288,6 @@ function capitalizeFirstLetter(string) {
 
 function send404(res){
 
-	res.status(404).send('Not found');
+	res.status(404).send('Not Found');
 
 }
